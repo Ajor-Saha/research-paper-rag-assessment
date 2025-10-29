@@ -1,0 +1,27 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/src"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}/src"
+  ],
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.diagnosticSeverityOverrides": {
+    "reportMissingImports": "none",
+    "reportCallIssue": "none",
+    "reportArgumentType": "none",
+    "reportAttributeAccessIssue": "none"
+  },
+  "cSpell.words": [
+    "qdrant",
+    "Qdrant",
+    "QDRANT",
+    "dotenv",
+    "uvicorn",
+    "fastapi",
+    "pydantic",
+    "sqlalchemy",
+    "psycopg"
+  ]
+}

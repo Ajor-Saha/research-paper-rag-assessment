@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: research-paper-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rag-network
+    restart: unless-stopped
+
+  # Ollama LLM Service (runs locally for model inference)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: research-paper-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - rag-network
+    # Pull model on startup
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        sleep 10
+        ollama pull gemma2:2b
+        wait
+
+  # FastAPI Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: research-paper-rag-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Qdrant connection (using docker service name)
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_COLLECTION_NAME: research_papers
+      
+      # Upload directory
+      UPLOAD_DIR: /app/uploads
+      
+      # Ollama service (using docker service name)
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: gemma2:2b
+      
+      # Python settings
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+    volumes:
+      # Mount uploads directory to persist files
+      - ./uploads:/app/uploads
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - rag-network
+    restart: unless-stopped
+
+volumes:
+  qdrant_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  rag-network:
+    driver: bridge

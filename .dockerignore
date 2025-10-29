@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Environment (keep .env for Docker but exclude from git)
+.env.example
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Docker (keep these OUT of the image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+DOCKER_DEPLOYMENT.md
+QUICK_START.md
+
+# Data and storage (will be mounted as volumes)
+uploads/*
+qdrant_storage/
+*.db
+*.sqlite
+
+# Documentation (not needed in runtime)
+README.md
+PULL_REQUEST_TEMPLATE.md
+SUBMISSION_GUIDE.md
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Sample papers (not needed in image, judges will upload their own)
+sample_papers/
+
+# Temporary files
+*.log
+*.tmp
+.cache/
+
