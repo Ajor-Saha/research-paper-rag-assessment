@@ -14,7 +14,8 @@ class OllamaService:
     
     def __init__(self, model: str = None):
         self.model = model or os.getenv("OLLAMA_MODEL", "gemma2:2b")
-        self.llm = OllamaLLM(model=self.model, temperature=0.3)
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.llm = OllamaLLM(model=self.model, base_url=base_url, temperature=0.3)
     
     def extract_paper_metadata(self, text: str) -> Dict:
         """Extract metadata from paper text using LLM"""
