@@ -14,9 +14,25 @@ class QdrantService:
     """Manage Qdrant vector database operations"""
     
     def __init__(self, qdrant_url: str = None, collection_name: str = None, embeddings=None):
-        self.qdrant_url = qdrant_url or os.getenv("QDRANT_URL", "http://localhost:6333")
+        # Auto-detect environment: use 'qdrant' in Docker, 'localhost' locally
+        if qdrant_url:
+            self.qdrant_url = qdrant_url
+        else:
+            env_qdrant_url = os.getenv("QDRANT_URL")
+            if not env_qdrant_url:
+                # Try to detect if we're in Docker
+                import socket
+                try:
+                    socket.gethostbyname('qdrant')
+                    self.qdrant_url = "http://qdrant:6333"  # In Docker
+                except socket.error:
+                    self.qdrant_url = "http://localhost:6333"  # Local
+            else:
+                self.qdrant_url = env_qdrant_url
+        
         self.collection_name = collection_name or os.getenv("QDRANT_COLLECTION_NAME", "research_papers")
         self.embeddings = embeddings
+        print(f"🔗 Connecting to Qdrant at: {self.qdrant_url}")
     
     def create_collection_from_documents(
         self, 

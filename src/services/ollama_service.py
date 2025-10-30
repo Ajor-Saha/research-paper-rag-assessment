@@ -14,7 +14,19 @@ class OllamaService:
     
     def __init__(self, model: str = None):
         self.model = model or os.getenv("OLLAMA_MODEL", "gemma2:2b")
-        base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        
+        # Auto-detect environment: use 'ollama' in Docker, 'localhost' locally
+        base_url = os.getenv("OLLAMA_BASE_URL")
+        if not base_url:
+            # Try to detect if we're in Docker by checking if 'ollama' hostname resolves
+            import socket
+            try:
+                socket.gethostbyname('ollama')
+                base_url = "http://ollama:11434"  # In Docker
+            except socket.error:
+                base_url = "http://localhost:11434"  # Local
+        
+        print(f"🔗 Connecting to Ollama at: {base_url}")
         self.llm = OllamaLLM(model=self.model, base_url=base_url, temperature=0.3)
     
     def extract_paper_metadata(self, text: str) -> Dict:
